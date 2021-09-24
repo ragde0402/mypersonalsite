@@ -5,17 +5,24 @@ from forms import CreatePostForm, LoginForm, ContactForm
 from flask_ckeditor import CKEditor
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
-from smtplib import SMTP
+from flask_mail import Mail, Message
 import os
 
 
 
 app = Flask(__name__)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get("FROM_MAIL")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASS")
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 Bootstrap(app)
 ckeditor = CKEditor(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -84,14 +91,9 @@ def contact():
             email = form.email.data
             phone = form.phone.data
             message = form.body.data
-
-            connection = SMTP("smtp.mail.yahoo.com")
-            connection.starttls()
-            connection.login(os.environ.get("FROM_MAIL"), os.environ.get("MAIL_PASS"))
-            connection.sendmail(from_addr=os.environ.get("FROM_MAIL"),
-                                to_addrs=os.environ.get("TO_MAIL"),
-                                msg=f"Subject: Mail from yous website. \n\nname: {name}\nemail: {email}\nphone: {phone}\n "
-                                    f"message: {message}")
+            msg = Message('Mail from your website', sender=os.environ.get("FROM_MAIL"), recipients=[os.environ.get("TO_MAIL")])
+            msg.body = f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}"
+            mail.send(msg)
             flash("Your message was sent successfully.")
             return redirect(url_for("contact"))
         flash("Oops something went wrong. Check all the fields and fill them correctly.")

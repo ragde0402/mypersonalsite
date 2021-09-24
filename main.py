@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get("FROM_MAIL")
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASS")
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
@@ -47,15 +48,6 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
 
-
-# db.create_all()
-# hashpas = generate_password_hash(os.environ.get("PASSWORD"), method='pbkdf2:sha256', salt_length=5)
-# admin = Users(
-#     name="Edgar",
-#     email="edgar.molecki@gmail.com",
-#     password=hashpas)
-# db.session.add(admin)
-# db.session.commit()
 
 @login_manager.user_loader
 def load_user(user_id):

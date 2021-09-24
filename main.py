@@ -84,6 +84,7 @@ def contact():
             email = form.email.data
             phone = form.phone.data
             message = form.body.data
+
             connection = SMTP("smtp.mail.yahoo.com")
             connection.starttls()
             connection.login(os.environ.get("FROM_MAIL"), os.environ.get("MAIL_PASS"))

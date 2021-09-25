@@ -17,7 +17,7 @@ background-position: center;
 }
 
 .arow {
-padding: 0% 15% 3%;
+padding: 0% 15% 3% 15%;
 }
 
 body {
@@ -53,12 +53,17 @@ transform: scale(5);
 }
 
 .card-img {
-width: 400px;
+width: 367px;
 height: 200px;
+margin: auto 1%;
+}
+
+.container {
+padding: 0;
 }
 
 .exp {
-padding: 3%;
+margin: 3% auto;
 }
 
 .fa-github {
@@ -67,7 +72,7 @@ color: Black;
 
 .flip-card {
   background-color: transparent;
-  width: 400px;
+  width: 367px;
   height: 200px;
   border: 1px solid #f1f1f1;
   perspective: 1000px;
@@ -114,11 +119,6 @@ padding-top: 0;
 text-align: center;
 }
 
-.just {
-display: flex;
-justify-content: space-between;
-}
-
 h1 {
 font-weight: 900;
 font-size: 5rem;
@@ -141,8 +141,24 @@ text-align: center;
 background-image: url("img/workspace-1280538.jpg");
 }
 
+.just {
+display: flex;
+justify-content: space-between;
+}
+
 #mainNav {
 background-color: #5F939A;
+}
+
+@media (max-width: 500px) {
+    .small-arow {
+        margin-left: 7%;
+}
+}
+
+@media (min-width: 500px) {
+    .small-arow {
+    margin-left: auto;}
 }
 
 .prof-img {

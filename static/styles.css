@@ -17,7 +17,7 @@ background-position: center;
 }
 
 .arow {
-padding: 0% 15% 3% 15%;
+padding: 0% auto 3%;
 }
 
 body {
@@ -148,17 +148,6 @@ justify-content: space-between;
 
 #mainNav {
 background-color: #5F939A;
-}
-
-@media (max-width: 500px) {
-    .small-arow {
-        margin-left: 7%;
-}
-}
-
-@media (min-width: 500px) {
-    .small-arow {
-    margin-left: auto;}
 }
 
 .prof-img {

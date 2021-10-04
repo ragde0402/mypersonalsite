@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, LoginForm, ContactForm
+from forms import CreatePostForm, LoginForm, ContactForm, CreatePortfolio
 from flask_ckeditor import CKEditor
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
@@ -33,11 +33,20 @@ db = SQLAlchemy(app)
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     title = db.Column(db.String(250), unique=True, nullable=False)
     subtitle = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
+    img_url = db.Column(db.String(250), nullable=False)
+
+
+class Portfolio(db.Model):
+    __tablename__ = "portfolio"
+    id = db.Column(db.Integer, primary_key=True)
+    project_name = db.Column(db.String(250), unique=True, nullable=False)
+    subtitle = db.Column(db.String(250), nullable=False)
+    url = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
 
 
@@ -48,6 +57,7 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
 
+db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -71,7 +81,8 @@ def preprogramming():
 
 @app.route("/programming")
 def programming():
-    return render_template("programming.html", current_user=current_user)
+    portfolio = Portfolio.query.all()
+    return render_template("programming.html", current_user=current_user, list=portfolio)
 
 
 @app.route("/contact", methods=["GET", "POST"])
@@ -118,6 +129,30 @@ def login():
 @login_required
 def new_post():
     form = CreatePostForm()
+    return render_template("new_post.html", current_user=current_user, form=form)\
+
+
+@app.route("/new_portfolio", methods=["POST", "GET"])
+@login_required
+def new_portfolio():
+    form = CreatePortfolio()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            name = form.project_name.data
+            subtitle = form.subtitle.data
+            img_url = form.img_url.data
+            project_url = form.project_url.data
+            description = form.description.data.replace("<p>", "").replace("</p", "")
+            new_portfolio_project = Portfolio(
+                project_name=name,
+                subtitle=subtitle,
+                img_url=img_url,
+                url=project_url,
+                description=description,
+            )
+            db.session.add(new_portfolio_project)
+            db.session.commit()
+        return redirect(url_for("programming"))
     return render_template("new_post.html", current_user=current_user, form=form)
 
 

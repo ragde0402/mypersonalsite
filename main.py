@@ -9,7 +9,6 @@ from flask_mail import Mail, Message
 import os
 
 
-
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -57,7 +56,9 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
 
+
 db.create_all()
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -94,7 +95,9 @@ def contact():
             email = form.email.data
             phone = form.phone.data
             message = form.body.data
-            msg = Message('Mail from your website', sender=os.environ.get("FROM_MAIL"), recipients=[os.environ.get("TO_MAIL")])
+            msg = Message('Mail from your website',
+                          sender=os.environ.get("FROM_MAIL"),
+                          recipients=[os.environ.get("TO_MAIL")])
             msg.body = f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}"
             mail.send(msg)
             flash("Your message was sent successfully.")
@@ -129,7 +132,7 @@ def login():
 @login_required
 def new_post():
     form = CreatePostForm()
-    return render_template("new_post.html", current_user=current_user, form=form)\
+    return render_template("new_post.html", current_user=current_user, form=form)
 
 
 @app.route("/new_portfolio", methods=["POST", "GET"])
@@ -142,7 +145,7 @@ def new_portfolio():
             subtitle = form.subtitle.data
             img_url = form.img_url.data
             project_url = form.project_url.data
-            description = form.description.data.replace("<p>", "").replace("</p", "")
+            description = form.description.data.replace("<p>", "").replace("</p>", "")
             new_portfolio_project = Portfolio(
                 project_name=name,
                 subtitle=subtitle,
@@ -152,6 +155,9 @@ def new_portfolio():
             )
             db.session.add(new_portfolio_project)
             db.session.commit()
+        else:
+            redirect(url_for("home"))
+            return
         return redirect(url_for("programming"))
     return render_template("new_post.html", current_user=current_user, form=form)
 

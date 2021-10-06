@@ -161,6 +161,10 @@ justify-content: space-between;
 background-color: #5F939A;
 }
 
+.portfolio-cards {
+text-align: center;
+}
+
 .prof-img {
 width: 50%;
 }

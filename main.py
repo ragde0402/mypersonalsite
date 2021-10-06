@@ -5,10 +5,29 @@ from forms import CreatePostForm, LoginForm, ContactForm, CreatePortfolio
 from flask_ckeditor import CKEditor
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
-from flask_mail import Mail, Message
+import smtplib
+import email.utils
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import os
 
+# Mail configuration
+mailertogo_host     = os.environ.get('MAILERTOGO_SMTP_HOST')
+mailertogo_port     = os.environ.get('MAILERTOGO_SMTP_PORT', 587)
+mailertogo_user     = os.environ.get('MAILERTOGO_SMTP_USER')
+mailertogo_password = os.environ.get('MAILERTOGO_SMTP_PASSWORD')
+mailertogo_domain   = os.environ.get('MAILERTOGO_DOMAIN', "mydomain.com")
 
+sender_user = 'noreply'
+sender_email = "@".join([sender_user, mailertogo_domain])
+sender_name = 'Your site'
+
+recipient_email = os.environ.get("TO_MAIL")
+recipient_name = os.environ.get("TO_MAIL")
+
+subject = 'Mail from personal site'
+
+# app configuration
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -21,8 +40,6 @@ Bootstrap(app)
 ckeditor = CKEditor(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -95,11 +112,21 @@ def contact():
             email = form.email.data
             phone = form.phone.data
             message = form.body.data
-            msg = Message('Mail from your website',
-                          sender=os.environ.get("FROM_MAIL"),
-                          recipients=[os.environ.get("TO_MAIL")])
-            msg.body = f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}"
-            mail.send(msg)
+
+            body_plain = (f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}")
+            message = MIMEMultipart('alternative')
+            message['Subject'] = subject
+            message['From'] = email.utils.formataddr((sender_name, sender_email))
+            message['To'] = email.utils.formataddr((recipient_name, recipient_email))
+            part1 = MIMEText(body_plain, 'plain')
+            message.attach(part1)
+            server = smtplib.SMTP(mailertogo_host, mailertogo_port)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(mailertogo_user, mailertogo_password)
+            server.sendmail(sender_email, recipient_email, message.as_string())
+            server.close()
             flash("Your message was sent successfully.")
             return redirect(url_for("contact"))
         flash("Oops something went wrong. Check all the fields and fill them correctly.")

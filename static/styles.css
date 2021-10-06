@@ -43,6 +43,7 @@ height: 20rem;
 .card-body {
 border-radius: 20%;
 color: white;
+height: 150px;
 }
 
 .card:hover {

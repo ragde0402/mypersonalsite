@@ -1,40 +1,36 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_bootstrap import Bootstrap
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, LoginForm, ContactForm, CreatePortfolio
-from flask_ckeditor import CKEditor
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import check_password_hash
+import os
 import smtplib
-import email.utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
+from email import utils
+
+from flask import Flask, render_template, redirect, url_for, flash, request
+from flask_bootstrap import Bootstrap
+from flask_ckeditor import CKEditor
+from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash
+
+from forms import CreatePostForm, LoginForm, ContactForm, CreatePortfolio
 
 # Mail configuration
-mailertogo_host     = os.environ.get('MAILERTOGO_SMTP_HOST')
-mailertogo_port     = os.environ.get('MAILERTOGO_SMTP_PORT', 587)
-mailertogo_user     = os.environ.get('MAILERTOGO_SMTP_USER')
+mailertogo_host = os.environ.get('MAILERTOGO_SMTP_HOST')
+mailertogo_port = os.environ.get('MAILERTOGO_SMTP_PORT', 587)
+mailertogo_user = os.environ.get('MAILERTOGO_SMTP_USER')
 mailertogo_password = os.environ.get('MAILERTOGO_SMTP_PASSWORD')
-mailertogo_domain   = os.environ.get('MAILERTOGO_DOMAIN', "mydomain.com")
+mailertogo_domain = os.environ.get('MAILERTOGO_DOMAIN', "edgarmolecki.xyz")
 
 sender_user = 'noreply'
 sender_email = "@".join([sender_user, mailertogo_domain])
-sender_name = 'Your site'
+sender_name = 'My site'
 
 recipient_email = os.environ.get("TO_MAIL")
-recipient_name = os.environ.get("TO_MAIL")
+recipient_name = "Edgar's site"
 
 subject = 'Mail from personal site'
 
 # app configuration
 app = Flask(__name__)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = os.environ.get("FROM_MAIL")
-app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASS")
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 Bootstrap(app)
 ckeditor = CKEditor(app)
@@ -74,7 +70,7 @@ class Users(UserMixin, db.Model):
     password = db.Column(db.String(250), nullable=False)
 
 
-db.create_all()
+# db.create_all()
 
 
 @login_manager.user_loader
@@ -113,13 +109,14 @@ def contact():
             phone = form.phone.data
             message = form.body.data
 
-            body_plain = (f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}")
+            body_plain = f"name: {name}\nemail: {email}\nphone: {phone}\nmessage: {message}"
             message = MIMEMultipart('alternative')
             message['Subject'] = subject
-            message['From'] = email.utils.formataddr((sender_name, sender_email))
-            message['To'] = email.utils.formataddr((recipient_name, recipient_email))
+            message['From'] = utils.formataddr((sender_name, sender_email))
+            message['To'] = utils.formataddr((recipient_name, recipient_email))
             part1 = MIMEText(body_plain, 'plain')
             message.attach(part1)
+
             server = smtplib.SMTP(mailertogo_host, mailertogo_port)
             server.ehlo()
             server.starttls()
@@ -127,6 +124,7 @@ def contact():
             server.login(mailertogo_user, mailertogo_password)
             server.sendmail(sender_email, recipient_email, message.as_string())
             server.close()
+
             flash("Your message was sent successfully.")
             return redirect(url_for("contact"))
         flash("Oops something went wrong. Check all the fields and fill them correctly.")
